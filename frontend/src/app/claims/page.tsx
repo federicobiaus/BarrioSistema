@@ -183,9 +183,15 @@ export default function ClaimsPage() {
           <Space direction="vertical" size="middle" style={{ width: '100%' }}>
             <Title level={3}>Registro de reclamos</Title>
             <Space wrap>
-              <Button type="primary" icon={<PlusOutlined />} onClick={() => setIsCreateModalOpen(true)}>
-                Nuevo reclamo
-              </Button>
+              {user?.personId ? (
+                <Button type="primary" icon={<PlusOutlined />} onClick={() => setIsCreateModalOpen(true)}>
+                  Nuevo reclamo
+                </Button>
+              ) : (
+                <Typography.Text type="secondary">
+                  No estás vinculado a una persona, no puedes crear reclamos.
+                </Typography.Text>
+              )}
             </Space>
           </Space>
         </Card>

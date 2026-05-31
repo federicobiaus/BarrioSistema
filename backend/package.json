@@ -4,10 +4,11 @@
   "private": true,
   "scripts": {
     "build": "prisma generate && nest build",
-    "start:prod": "node dist/main",
+    "start": "nest start",
     "start:dev": "nest start --watch",
+    "start:prod": "node dist/main",
     "prisma:generate": "prisma generate",
-    "prisma:migrate": "prisma migrate dev",
+    "prisma:migrate": "prisma migrate deploy",
     "prisma:seed": "ts-node prisma/seed.ts"
   },
     "prisma": {

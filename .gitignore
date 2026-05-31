@@ -1,0 +1,54 @@
+# ==============================================================================
+# 1. ARCHIVOS COMPILADOS Y DEPENDENCIAS (Aplica a raíz, frontend y backend)
+# ==============================================================================
+**/node_modules/
+**/.next/
+**/dist/
+**/build/
+**/out/
+
+# Artifactos de Prisma
+**/prisma/generated/
+
+# ==============================================================================
+# 2. VARIABLES DE ENTORNO Y SECRETOS (¡Crucial para seguridad!)
+# ==============================================================================
+**/.env
+**/.env*.local
+**/*.env
+
+# ==============================================================================
+# 3. ARCHIVOS DE SISTEMA Y LOGS
+# ==============================================================================
+*.log
+**/logs/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+.DS_Store
+Thumbs.db
+
+# ==============================================================================
+# 4. EDITORES (VS Code e IDEs)
+# ==============================================================================
+.vscode/*
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
+.idea/
+*.sublime-workspace
+
+# ==============================================================================
+# 5. TEMPORALES Y COBERTURA
+# ==============================================================================
+**/coverage/
+**/.nyc_output/
+.temp/
+.tmp/
+pids
+*.pid
+*.seed
+*.pid.lock
+report.[0-9]*.[0-9]*.[0-9]*.[0-9]*.json

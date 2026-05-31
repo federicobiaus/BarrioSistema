@@ -1,0 +1,45 @@
+import axios from 'axios';
+
+const api = axios.create({
+  baseURL: 'http://localhost:3001/api',
+});
+
+// REQUEST interceptor
+api.interceptors.request.use(
+  (config) => {
+    const token =
+      localStorage.getItem('token');
+
+    if (token) {
+      config.headers.Authorization =
+        `Bearer ${token}`;
+    }
+
+    return config;
+  },
+  (error) => {
+    return Promise.reject(error);
+  },
+);
+
+// RESPONSE interceptor
+api.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    const status =
+      error?.response?.status;
+
+    if (status === 401) {
+      localStorage.removeItem('token');
+      localStorage.removeItem('user');
+
+      window.location.href =
+        '/login';
+    }
+
+    return Promise.reject(error);
+  },
+);
+
+// 👇 ESTE ES EL EXPORT (VA AL FINAL)
+export default api;

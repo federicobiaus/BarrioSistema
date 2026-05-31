@@ -1,0 +1,229 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+//
+// ENUMS
+//
+enum Role {
+  ADMIN
+  GUARD
+  OWNER
+}
+
+enum PersonType {
+  OWNER
+  VISITOR
+  PROVIDER
+  GUARD
+}
+
+enum AccessType {
+  ENTRY
+  EXIT
+}
+
+enum VisitorType {
+  OWNER
+  VISITOR
+  PROVIDER
+}
+
+enum ReservationStatus {
+  PENDING
+  APPROVED
+  REJECTED
+  CANCELLED
+}
+
+enum ReservationType {
+  CLUBHOUSE
+  FUTBOLL
+  VOLEY
+}
+
+enum ClaimStatus {
+  OPEN
+  IN_PROGRESS
+  CLOSED
+}
+
+//
+// USER
+// Login/autenticación
+//
+model User {
+  id          String   @id @default(cuid())
+  firstName   String?
+  lastName    String?
+  email       String   @unique
+  password    String
+  role        Role
+  // Relación opcional con persona
+  personId    String?  @unique
+  person      Person?  @relation(fields: [personId], references: [id])
+  // Auditoría
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  // Logs de acceso registrados por este usuario
+  accessLogs      AccessLog[]
+  claimComments   ClaimComment[]
+  createdPeople   Person[] @relation("UserCreatedPeople")
+}
+
+//
+// PERSON
+// Identidad central del sistema
+//
+model Person {
+  id            String   @id @default(cuid())
+  dni           String   @unique
+  firstName     String
+  lastName      String
+  phone         String?
+  email         String?
+  lot           String?
+  block         String?
+  type          PersonType
+  photoUrl      String?
+  isBlocked     Boolean  @default(false)
+  // Estado actual dentro/fuera
+  isInside      Boolean  @default(false)
+  //
+  // VISITAS
+  // Una visita debe tener host (propietario)
+  //
+  hostId        String?
+  host          Person?  @relation("PersonHost", fields: [hostId], references: [id])
+  visitors      Person[] @relation("PersonHost")
+  //
+  // Login opcional
+  //
+  user          User?
+  //
+  // Relaciones
+  //
+  vehicles      Vehicle[]
+  accessLogs    AccessLog[]
+  reservations  Reservation[]
+  claims        Claim[]
+  //
+  // Auditoría
+  //
+  createdById   String?
+  createdBy     User?    @relation("UserCreatedPeople", fields: [createdById], references: [id])
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+}
+
+//
+// VEHICLE
+//
+model Vehicle {
+  id            String   @id @default(cuid())
+  plate         String   @unique
+  brand         String?
+  model         String?
+  color         String?
+  //
+  // Dueño del vehículo
+  //
+  personId      String
+  person        Person   @relation(fields: [personId], references: [id])
+  //
+  // Historial de accesos
+  //
+  accessLogs    AccessLog[]
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+}
+
+//
+// ACCESS LOG
+// Historial histórico de entradas/salidas
+//
+model AccessLog {
+  id              String      @id @default(cuid())
+  type            AccessType
+  //
+  // Persona que ingresa/sale
+  //
+  personId        String
+  person          Person      @relation(fields: [personId], references: [id])
+  //
+  // Vehículo usado (opcional)
+  //
+  vehicleId       String?
+  vehicle         Vehicle?    @relation(fields: [vehicleId], references: [id])
+  //
+  // Guardia/admin que registró
+  //
+  registeredById  String
+  registeredBy    User        @relation(fields: [registeredById], references: [id])
+  //
+  // Snapshots históricos
+  // IMPORTANTES para auditoría
+  //
+  personName      String
+  personDni       String
+  vehiclePlate    String?
+  visitorType     VisitorType
+  visitedLot      String?
+  visitedBlock    String?
+  //
+  // Auditoría
+  //
+  createdAt       DateTime @default(now())
+}
+
+//
+// RESERVATIONS
+//
+model Reservation {
+  id            String             @id @default(cuid())
+  title         String
+  description   String?
+  type          ReservationType
+  date          DateTime
+  status        ReservationStatus @default(PENDING)
+  //
+  // Propietario que reserva
+  //
+  personId      String
+  person        Person             @relation(fields: [personId], references: [id])
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+}
+
+model ClaimComment {
+  id         String   @id @default(cuid())
+  claimId    String
+  claim      Claim    @relation(fields: [claimId], references: [id])
+  authorId   String
+  author     User     @relation(fields: [authorId], references: [id])
+  content    String
+  createdAt  DateTime @default(now())
+}
+
+//
+// Reclamos
+//
+model Claim {
+  id            String        @id @default(cuid())
+  title         String
+  description   String
+  status        ClaimStatus   @default(OPEN)
+  //
+  // Propietario que reclama
+  //
+  personId      String
+  person        Person        @relation(fields: [personId], references: [id])
+  comments      ClaimComment[]
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+}

@@ -3,8 +3,9 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useAuth } from '@/src/context/AuthContext';
+import { useState, useEffect } from 'react';
 import { Layout, Menu, Button, Typography, Space } from 'antd';
-import { LogoutOutlined } from '@ant-design/icons';
+import { LogoutOutlined, MenuFoldOutlined, MenuUnfoldOutlined } from '@ant-design/icons';
 
 const { Sider, Content, Header } = Layout;
 const menuItems = [
@@ -52,6 +53,28 @@ export default function AdminLayout({
 }) {
   const pathname = usePathname();
   const { user, logout } = useAuth();
+  const [collapsed, setCollapsed] = useState(false);
+
+  useEffect(() => {
+    try {
+      const stored = localStorage.getItem('sidebarCollapsed');
+      if (stored !== null) setCollapsed(stored === 'true');
+    } catch (e) {
+      // ignore
+    }
+  }, []);
+
+  const toggleCollapsed = () => {
+    setCollapsed((c) => {
+      const next = !c;
+      try {
+        localStorage.setItem('sidebarCollapsed', String(next));
+      } catch (e) {
+        // ignore
+      }
+      return next;
+    });
+  };
 
   const items = menuItems
     .filter((item) => (user?.role ? item.roles.includes(user.role) : false))
@@ -66,13 +89,20 @@ export default function AdminLayout({
 
   return (
     <Layout style={{ minHeight: '100vh', background: '#f0f2f5' }}>
-      <Sider width={260} style={{ background: '#001529' }}>
+      <Sider
+        collapsible
+        collapsed={collapsed}
+        onCollapse={(val) => setCollapsed(val)}
+        collapsedWidth={80}
+        width={260}
+        style={{ background: '#001529' }}
+      >
         <div style={{ padding: 24, color: '#fff' }}>
           <Typography.Title level={4} style={{ color: '#fff', margin: 0 }}>
-            Barrio
+            Sistema Barrio
           </Typography.Title>
           <Typography.Text style={{ color: 'rgba(255,255,255,0.75)' }}>
-            Sistema de Accesos
+            Gestión de Accesos
           </Typography.Text>
         </div>
 
@@ -100,6 +130,10 @@ export default function AdminLayout({
       </Sider>
 
       <Layout>
+        <Header style={{ background: '#fff', padding: '0 16px', display: 'flex', alignItems: 'center', gap: 12 }}>
+          <Button type="text" onClick={toggleCollapsed} icon={collapsed ? <MenuUnfoldOutlined /> : <MenuFoldOutlined />} />
+          <div style={{ flex: 1 }} />
+        </Header>
         <Content style={{ padding: 24 }}>{children}</Content>
       </Layout>
     </Layout>

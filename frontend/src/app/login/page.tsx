@@ -43,8 +43,8 @@ export default function LoginPage() {
     <div style={{ minHeight: '100vh', backgroundColor: '#f3f4f6', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '1rem' }}>
       <Card style={{ width: '100%', maxWidth: 520, borderRadius: 24 }} variant="borderless">
         <div style={{ marginBottom: 24, textAlign: 'center' }}>
-          <Title level={2}>Barrio Privado</Title>
-          <Text type="secondary">Sistema de Accesos</Text>
+          <Title level={2}>Sistema Barrio</Title>
+          <Text type="secondary">Gestión de Accesos</Text>
         </div>
 
         {error && (

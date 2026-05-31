@@ -1,17 +1,17 @@
 'use client';
 
 import { useState } from 'react';
-import { useRouter } from 'next/navigation';
+//import { useRouter } from 'navigation'; // Ajustado si usas Next.js App Router estándar
+import { useRouter as useNextRouter } from 'next/navigation'; // Mantener el tuyo original
 import { useAuth } from '@/src/context/AuthContext';
-import axios from 'axios';
+import { authApi } from '@/src/lib/api'; // <-- IMPORTAMOS TU INSTANCIA DE API PERSONALIZADA
 import { Card, Form, Input, Button, Typography, Alert } from 'antd';
 
 const { Title, Text } = Typography;
 
 export default function LoginPage() {
   const { login } = useAuth();
-
-  const router = useRouter();
+  const router = useNextRouter();
 
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -23,7 +23,8 @@ export default function LoginPage() {
       setLoading(true);
       setError('');
 
-      const response = await axios.post('http://localhost:3001/api/auth/login', {
+      // <-- CORREGIDO: Ahora usa authApi y se conecta dinámicamente a Render o Localhost
+      const response = await authApi.post('/api/auth/login', {
         email,
         password,
       });

@@ -19,6 +19,14 @@ interface Reservation {
   personId?: string;
 }
 
+interface ApiErrorResponse {
+  response?: {
+    data?: {
+      message?: string;
+    };
+  };
+}
+
 export default function ReservationsPage() {
   const { user } = useAuth();
   const [reservations, setReservations] =
@@ -38,14 +46,17 @@ export default function ReservationsPage() {
   const [cancelLoadingId, setCancelLoadingId] =
     useState<string | null>(null);
 
-  const loadReservations =
-    async () => {
-      const response = await api.get('reservations');
-      setReservations(response.data);
-    };
+  async function loadReservations() {
+    const response = await api.get('reservations');
+    setReservations(response.data);
+  }
 
   useEffect(() => {
-    loadReservations();
+    const fetchReservations = async () => {
+      await loadReservations();
+    };
+
+    void fetchReservations();
   }, []);
 
   const handleCreateReservation =
@@ -77,9 +88,11 @@ export default function ReservationsPage() {
         setDate('');
         await loadReservations();
       } catch (err: unknown) {
-        const message = typeof err === 'object' && err !== null && 'response' in err
-          ? (err as any)?.response?.data?.message
-          : undefined;
+        const message =
+          typeof err === 'object' &&
+          err !== null
+            ? (err as ApiErrorResponse).response?.data?.message
+            : undefined;
         setError(
           message || 'Error al crear la reserva',
         );
@@ -96,9 +109,11 @@ export default function ReservationsPage() {
         await api.patch(`reservations/${reservationId}/cancel`);
         await loadReservations();
       } catch (err: unknown) {
-        const message = typeof err === 'object' && err !== null && 'response' in err
-          ? (err as any)?.response?.data?.message
-          : undefined;
+        const message =
+          typeof err === 'object' &&
+          err !== null
+            ? (err as ApiErrorResponse).response?.data?.message
+            : undefined;
         setError(
           message || 'Error al cancelar la reserva',
         );

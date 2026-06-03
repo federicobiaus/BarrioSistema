@@ -8,6 +8,7 @@ import AdminLayout from '@/src/components/AdminLayout';
 import RoleGuard from '@/src/components/RoleGuard';
 import { useAuth } from '@/src/context/AuthContext';
 import api from '@/src/lib/api';
+import { App } from 'antd';
 
 const { TextArea } = Input;
 const { Title } = Typography;
@@ -177,6 +178,7 @@ export default function ClaimsPage() {
   ];
 
   return (
+    <App>
     <AdminLayout>
       <RoleGuard allowedRoles={['ADMIN', 'GUARD', 'USER', 'OWNER']}>
         <Card style={{ marginBottom: 24 }}>
@@ -271,5 +273,6 @@ export default function ClaimsPage() {
         </Modal>
       </RoleGuard>
     </AdminLayout>
+    </App>
   );
 }

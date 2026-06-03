@@ -10,12 +10,20 @@ import AdminLayout from '@/src/components/AdminLayout';
 
 const { Title, Text } = Typography;
 
+interface PersonData {
+  id: string;
+  type: string;
+  lot?: string | null;
+  block?: string | null;
+}
+
 export default function ProfilePage() {
   const { user, updateUser } = useAuth();
   const router = useRouter();
 
   const [loading, setLoading] = useState(false);
   const [preview, setPreview] = useState<string | null>(user?.avatar || null);
+  const [person, setPerson] = useState<PersonData | null>(null);
 
   const [form] = Form.useForm();
 
@@ -28,6 +36,24 @@ export default function ProfilePage() {
     });
   }, [user, form]);
 
+  useEffect(() => {
+    async function loadPerson() {
+      if (!user?.personId) {
+        setPerson(null);
+        return;
+      }
+
+      try {
+        const response = await api.get(`/people/${user.personId}`);
+        setPerson(response.data);
+      } catch {
+        setPerson(null);
+      }
+    }
+
+    loadPerson();
+  }, [user?.personId]);
+
   const handleFile = async (file: File) => {
     // Convert to base64 for preview
     return new Promise<string>((resolve, reject) => {
@@ -38,14 +64,15 @@ export default function ProfilePage() {
     });
   };
 
-  const onFinish = async (values: any) => {
+  const onFinish = async (values: Record<string, unknown>) => {
     setLoading(true);
     try {
       // Prepare payload for backend
       const payload = {
-        firstName: values.firstName,
-        lastName: values.lastName,
-        email: values.email,
+        firstName: values.firstName as string,
+        lastName: values.lastName as string,
+        email: values.email as string,
+        phone: values.phone as string,
       };
 
       // Call backend API to update user
@@ -56,13 +83,22 @@ export default function ProfilePage() {
         firstName: response.data.firstName,
         lastName: response.data.lastName,
         email: response.data.email,
+        phone: values.phone as string,
         avatar: preview, // Store avatar locally in context
       });
 
       message.success('Perfil actualizado correctamente');
       router.back();
-    } catch (e: any) {
-      const errorMsg = e?.response?.data?.message || 'Error al actualizar el perfil';
+    } catch (e: unknown) {
+      interface ApiError {
+        response?: {
+          data?: {
+            message?: string;
+          };
+        };
+      }
+      const axiosError = e as ApiError;
+      const errorMsg = axiosError.response?.data?.message || 'Error al actualizar el perfil';
       message.error(errorMsg);
     } finally {
       setLoading(false);
@@ -83,7 +119,7 @@ export default function ProfilePage() {
                   ? `${user.firstName} ${user.lastName}`
                   : user?.name || 'Perfil'}
               </Title>
-              <Text type="secondary">{user?.role || ''}</Text>
+              <Text type="secondary">{user?.role == 'OWNER' ? 'Propietario' : user?.role == 'ADMIN' ? 'Administrador' : ''}</Text>
             </div>
           </div>
 
@@ -126,6 +162,22 @@ export default function ProfilePage() {
               </div>
             </Form.Item>
           </Form>
+
+          {person?.type === 'OWNER' && (
+            <Card style={{ marginTop: 24, borderRadius: 12 }}>
+              <Title level={4}>Datos de propietario</Title>
+              <div style={{ display: 'grid', gap: 10, marginTop: 12 }}>
+                <div>
+                  <Text type="secondary">Lote</Text>
+                  <div style={{ fontWeight: 600 }}>{person.lot || '-'}</div>
+                </div>
+                <div>
+                  <Text type="secondary">Manzana</Text>
+                  <div style={{ fontWeight: 600 }}>{person.block || '-'}</div>
+                </div>
+              </div>
+            </Card>
+          )}
         </Card>
       </div>
     </AdminLayout>

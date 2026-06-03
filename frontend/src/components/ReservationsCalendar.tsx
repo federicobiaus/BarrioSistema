@@ -1,6 +1,6 @@
 ﻿'use client';
 
-import { Calendar, Badge, Card, List, Typography } from 'antd';
+import { Badge, Button, Calendar, Card, List, Typography } from 'antd';
 import dayjs from 'dayjs';
 
 interface Reservation {
@@ -9,14 +9,22 @@ interface Reservation {
   title?: string;
   description?: string;
   date?: string;
+  status?: string;
+  personId?: string;
   person?: { firstName?: string; lastName?: string };
 }
 
 interface Props {
   reservations: Reservation[];
+  onCancel?: (reservationId: string) => void;
+  cancelingReservationId?: string | null;
 }
 
-export default function ReservationsCalendar({ reservations }: Props) {
+export default function ReservationsCalendar({
+  reservations,
+  onCancel,
+  cancelingReservationId,
+}: Props) {
   const eventsByDay = reservations.reduce<Record<string, Reservation[]>>(
     (acc, reservation) => {
       const dateKey = reservation.date
@@ -58,30 +66,72 @@ export default function ReservationsCalendar({ reservations }: Props) {
     );
   };
 
+  const now = dayjs();
+
+  const canCancel = (reservation: Reservation) => {
+    if (reservation.status === 'CANCELLED') return false;
+    if (!reservation.date) return false;
+    return dayjs(reservation.date).isAfter(now.add(1, 'day'));
+  };
+
+  const upcomingReservations = reservations
+    .filter((reservation) => reservation.status !== 'CANCELLED')
+    .sort((a, b) => {
+      const first = a.date ? dayjs(a.date).valueOf() : 0;
+      const second = b.date ? dayjs(b.date).valueOf() : 0;
+      return first - second;
+    })
+    .slice(0, 6);
+
   return (
-    <Card className="rounded-2xl shadow" style={{ minHeight: 700 }}>
+    <Card className="rounded-2xl shadow" style={{ minHeight: 520 }}>
       <Typography.Title level={4}>Calendario de reservas</Typography.Title>
       <Calendar cellRender={dateCellRender} />
       <div style={{ marginTop: 24 }}>
         <Typography.Title level={5}>Próximas reservas</Typography.Title>
         <List
-          dataSource={reservations.slice(0, 6)}
+          dataSource={upcomingReservations}
           locale={{ emptyText: 'No hay reservas disponibles' }}
-          renderItem={(reservation) => (
-            <List.Item>
-              <List.Item.Meta
-                title={`${reservation.type ? `[${reservation.type}] ` : ''}${reservation.title || 'Reserva'}`}
-                description={
-                  <>
-                    <div>{reservation.description}</div>
-                    <div style={{ color: '#888' }}>
-                      {reservation.date ? dayjs(reservation.date).format('DD/MM/YYYY HH:mm') : 'Fecha no disponible'}
-                    </div>
-                  </>
+          renderItem={(reservation) => {
+            const cancelDisabled = !onCancel || !canCancel(reservation);
+            const ownerLabel = reservation.person ? ` - ${reservation.person.firstName ?? ''} ${reservation.person.lastName ?? ''}` : '';
+
+            return (
+              <List.Item
+                actions={
+                  onCancel && reservation.status !== 'CANCELLED'
+                    ? [
+                        <Button
+                          key="cancel"
+                          type="link"
+                          danger
+                          disabled={cancelDisabled}
+                          loading={cancelingReservationId === reservation.id}
+                          onClick={() => onCancel(reservation.id)}
+                        >
+                          Cancelar
+                        </Button>,
+                      ]
+                    : []
                 }
-              />
-            </List.Item>
-          )}
+              >
+                <List.Item.Meta
+                  title={`${reservation.type ? `[${reservation.type}] ` : ''}${reservation.title || 'Reserva'}${ownerLabel}`}
+                  description={
+                    <>
+                      <div>{reservation.description}</div>
+                      <div style={{ color: '#888' }}>
+                        {reservation.date ? dayjs(reservation.date).format('DD/MM/YYYY HH:mm') : 'Fecha no disponible'}
+                      </div>
+                      {reservation.status === 'CANCELLED' && (
+                        <Typography.Text type="danger">Cancelada</Typography.Text>
+                      )}
+                    </>
+                  }
+                />
+              </List.Item>
+            );
+          }}
         />
       </div>
     </Card>

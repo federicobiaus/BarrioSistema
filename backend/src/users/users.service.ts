@@ -37,7 +37,7 @@ export class UsersService {
       throw new NotFoundException('Usuario no encontrado');
     }
 
-    return this.prisma.user.update({
+    const updatedUser = await this.prisma.user.update({
       where: { id },
       data: {
         ...(dto.firstName && { firstName: dto.firstName }),
@@ -45,5 +45,19 @@ export class UsersService {
         ...(dto.email && { email: dto.email }),
       },
     });
+
+    if (user.personId) {
+      await this.prisma.person.update({
+        where: { id: user.personId },
+        data: {
+          ...(dto.firstName && { firstName: dto.firstName }),
+          ...(dto.lastName && { lastName: dto.lastName }),
+          ...(dto.email && { email: dto.email }),
+          ...(dto.phone !== undefined && { phone: dto.phone }),
+        },
+      });
+    }
+
+    return updatedUser;
   }
 }

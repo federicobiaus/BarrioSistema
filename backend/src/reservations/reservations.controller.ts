@@ -18,6 +18,8 @@ import { Roles } from '../common/decorators/roles.decorator';
 
 import { Role } from '../common/enums/role.enum';
 
+import { CurrentUser } from '../auth/decorators/current-user.decorator';
+
 import { CreateReservationPrismaDto } from './dto/create-reservation-prisma.dto';
 import { UpdateReservationDto } from './dto/update-reservation.dto';
 
@@ -45,8 +47,8 @@ export class ReservationsController {
   }
 
   @Patch(':id/cancel')
-  async cancel(@Param('id') id: string) {
-    return this.reservationsService.cancel(id);
+  async cancel(@Param('id') id: string, @CurrentUser() user: any) {
+    return this.reservationsService.cancel(id, user);
   }
 
 

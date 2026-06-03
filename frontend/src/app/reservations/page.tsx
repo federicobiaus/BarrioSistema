@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState, type ChangeEvent } from 'react';
-import { Button, Card, Form, Input, Select, Space, Typography, Alert } from 'antd';
+import { Button, Card, Col, Form, Input, Row, Select, Typography, Alert } from 'antd';
 import AdminLayout from '@/src/components/AdminLayout';
 import RoleGuard from '@/src/components/RoleGuard';
 import api from '@/src/lib/api';
@@ -9,10 +9,20 @@ import { useAuth } from '@/src/context/AuthContext';
 
 import ReservationsCalendar from '@/src/components/ReservationsCalendar';
 
+interface Reservation {
+  id: string;
+  title?: string;
+  type?: string;
+  description?: string;
+  date?: string;
+  status?: string;
+  personId?: string;
+}
+
 export default function ReservationsPage() {
   const { user } = useAuth();
   const [reservations, setReservations] =
-    useState([]);
+    useState<Reservation[]>([]);
   const [title, setTitle] =
     useState('');
   const [type, setType] =
@@ -25,16 +35,18 @@ export default function ReservationsPage() {
     useState('');
   const [loading, setLoading] =
     useState(false);
-
-  useEffect(() => {
-    loadReservations();
-  }, []);
+  const [cancelLoadingId, setCancelLoadingId] =
+    useState<string | null>(null);
 
   const loadReservations =
     async () => {
       const response = await api.get('reservations');
       setReservations(response.data);
     };
+
+  useEffect(() => {
+    loadReservations();
+  }, []);
 
   const handleCreateReservation =
     async () => {
@@ -64,15 +76,42 @@ export default function ReservationsPage() {
         setDescription('');
         setDate('');
         await loadReservations();
-      } catch (err: any) {
+      } catch (err: unknown) {
+        const message = typeof err === 'object' && err !== null && 'response' in err
+          ? (err as any)?.response?.data?.message
+          : undefined;
         setError(
-          err?.response?.data?.message ||
-            'Error al crear la reserva',
+          message || 'Error al crear la reserva',
         );
       } finally {
         setLoading(false);
       }
     };
+
+  const handleCancelReservation =
+    async (reservationId: string) => {
+      setError('');
+      try {
+        setCancelLoadingId(reservationId);
+        await api.patch(`reservations/${reservationId}/cancel`);
+        await loadReservations();
+      } catch (err: unknown) {
+        const message = typeof err === 'object' && err !== null && 'response' in err
+          ? (err as any)?.response?.data?.message
+          : undefined;
+        setError(
+          message || 'Error al cancelar la reserva',
+        );
+      } finally {
+        setCancelLoadingId(null);
+      }
+    };
+
+  const sortedReservations = [...reservations].sort((a, b) => {
+    const first = a.date ? new Date(a.date).getTime() : 0;
+    const second = b.date ? new Date(b.date).getTime() : 0;
+    return first - second;
+  });
 
   return (
     <AdminLayout>
@@ -80,63 +119,71 @@ export default function ReservationsPage() {
         <div style={{ padding: 24 }}>
           <div style={{ marginBottom: 24 }}>
             <Typography.Title level={2}>Reservas</Typography.Title>
-            <Typography.Text type="secondary">Calendario de reservas</Typography.Text>
+            <Typography.Text type="secondary">Calendario y gestión de reservas</Typography.Text>
           </div>
 
-          <Card style={{ marginBottom: 24 }}>
-            <Typography.Title level={4}>Crear reserva</Typography.Title>
+          <Row gutter={[24, 24]}>
+            <Col xs={24} lg={10}>
+              <Card className="rounded-2xl shadow" style={{ maxWidth: 560 }}>
+                <Typography.Title level={4}>Crear reserva</Typography.Title>
 
-            <Form layout="vertical" onFinish={handleCreateReservation}>
-              <Form.Item label="Título" required>
-                <Input
-                  value={title}
-                  onChange={(e: ChangeEvent<HTMLInputElement>) => setTitle(e.target.value)}
-                  placeholder="Visita del proveedor"
-                />
-              </Form.Item>
+                <Form layout="vertical" onFinish={handleCreateReservation}>
+                  <Form.Item label="Título" required>
+                    <Input
+                      value={title}
+                      onChange={(e: ChangeEvent<HTMLInputElement>) => setTitle(e.target.value)}
+                      placeholder="Visita del proveedor"
+                    />
+                  </Form.Item>
 
-              <Form.Item label="Tipo de reserva" required>
-                <Select value={type} onChange={(value: string) => setType(value)}>
-                  <Select.Option value="CLUBHOUSE">Casa de club</Select.Option>
-                  <Select.Option value="FUTBOLL">Fútbol</Select.Option>
-                  <Select.Option value="VOLEY">Vóley</Select.Option>
-                </Select>
-              </Form.Item>
+                  <Form.Item label="Tipo de reserva" required>
+                    <Select value={type} onChange={(value: string) => setType(value)}>
+                      <Select.Option value="CLUBHOUSE">Casa de club</Select.Option>
+                      <Select.Option value="FUTBOLL">Fútbol</Select.Option>
+                      <Select.Option value="VOLEY">Vóley</Select.Option>
+                    </Select>
+                  </Form.Item>
 
-              <Form.Item label="Fecha y hora" required>
-                <Input
-                  type="datetime-local"
-                  value={date}
-                  onChange={(e: ChangeEvent<HTMLInputElement>) => setDate(e.target.value)}
-                />
-              </Form.Item>
+                  <Form.Item label="Fecha y hora" required>
+                    <Input
+                      type="datetime-local"
+                      value={date}
+                      onChange={(e: ChangeEvent<HTMLInputElement>) => setDate(e.target.value)}
+                    />
+                  </Form.Item>
 
-              <Form.Item label="Descripción (opcional)">
-                <Input.TextArea
-                  value={description}
-                  onChange={(e: ChangeEvent<HTMLTextAreaElement>) => setDescription(e.target.value)}
-                  rows={3}
-                  placeholder="Detalles de la reserva"
-                />
-              </Form.Item>
+                  <Form.Item label="Descripción (opcional)">
+                    <Input.TextArea
+                      value={description}
+                      onChange={(e: ChangeEvent<HTMLTextAreaElement>) => setDescription(e.target.value)}
+                      rows={3}
+                      placeholder="Detalles de la reserva"
+                    />
+                  </Form.Item>
 
-              {error && (
-                <Form.Item>
-                  <Alert message={error} type="error" showIcon />
-                </Form.Item>
-              )}
+                  {error && (
+                    <Form.Item>
+                      <Alert message={error} type="error" showIcon />
+                    </Form.Item>
+                  )}
 
-              <Form.Item>
-                <Button type="primary" htmlType="submit" loading={loading} block>
-                  {loading ? 'Creando reserva...' : 'Crear reserva'}
-                </Button>
-              </Form.Item>
-            </Form>
-          </Card>
+                  <Form.Item>
+                    <Button type="primary" htmlType="submit" loading={loading} block>
+                      {loading ? 'Creando reserva...' : 'Crear reserva'}
+                    </Button>
+                  </Form.Item>
+                </Form>
+              </Card>
+            </Col>
 
-          <ReservationsCalendar
-            reservations={reservations}
-          />
+            <Col xs={24} lg={14}>
+              <ReservationsCalendar
+                reservations={sortedReservations}
+                onCancel={handleCancelReservation}
+                cancelingReservationId={cancelLoadingId}
+              />
+            </Col>
+          </Row>
         </div>
       </RoleGuard>
     </AdminLayout>

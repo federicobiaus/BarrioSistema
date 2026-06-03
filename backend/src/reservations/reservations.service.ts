@@ -1,5 +1,6 @@
 import {
   BadRequestException,
+  ForbiddenException,
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
@@ -9,6 +10,7 @@ import { PrismaService } from '../prisma/prisma.service';
 import { CreateReservationPrismaDto } from './dto/create-reservation-prisma.dto';
 import { UpdateReservationDto } from './dto/update-reservation.dto';
 import { Reservation, ReservationStatus } from '@prisma/client';
+import { Role } from '../common/enums/role.enum';
 
 @Injectable()
 export class ReservationsService {
@@ -62,11 +64,22 @@ export class ReservationsService {
     return updated;
   }
 
-  async cancel(id: string): Promise<Reservation> {
+  async cancel(id: string, user: any): Promise<Reservation> {
     const existing = await this.prisma.reservation.findUnique({ where: { id } });
     if (!existing) throw new NotFoundException('Reservation not found');
 
-    if (existing.status === 'CANCELLED') throw new BadRequestException('Reservation already cancelled');
+    if (user.role !== Role.ADMIN && existing.personId !== user.personId) {
+      throw new ForbiddenException('No tiene permisos para cancelar esta reserva');
+    }
+
+    if (existing.status === 'CANCELLED') {
+      throw new BadRequestException('Reservation already cancelled');
+    }
+
+    const cancellationDeadline = new Date(Date.now() + 24 * 60 * 60 * 1000);
+    if (existing.date <= cancellationDeadline) {
+      throw new BadRequestException('No se puede cancelar una reserva dentro de las 24 horas previas al evento');
+    }
 
     const cancelled = await this.prisma.reservation.update({
       where: { id },

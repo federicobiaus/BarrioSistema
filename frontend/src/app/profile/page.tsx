@@ -170,12 +170,10 @@ export default function ProfilePage() {
                 <div>
                   <Text type="secondary">Lote</Text>
                   <div style={{ fontWeight: 600 }}>{person.lot || '-'}</div>
-                </div>
-                <div>
                   <Text type="secondary">Manzana</Text>
                   <div style={{ fontWeight: 600 }}>{person.block || '-'}</div>
                 </div>
-              </div>
+                </div>
             </Card>
           )}
         </Card>

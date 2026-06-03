@@ -162,13 +162,13 @@ export default function AdminLayout({
 
                 <div style={{ minWidth: 0, flex: 1 }}>
                   <Typography.Text strong style={{ color: '#fff', display: 'block', lineHeight: 1.2, marginBottom: 4 }}>
-                    {user?.name || user?.email}
+                    {user?.first_name && user?.last_name ? `${user.first_name} ${user.last_name}` : 'Usuario'}
                   </Typography.Text>
                   <Typography.Text style={{ color: 'rgba(255,255,255,0.75)', display: 'block', fontSize: 13, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
                     {user?.email}
                   </Typography.Text>
                   <Typography.Text style={{ color: 'rgba(255,255,255,0.65)', fontSize: 12 }}>
-                    {user?.role}
+                    {user?.role == 'ADMIN' ? 'Administrador' : user?.role == 'OWNER' ? 'Residente' : 'Usuario'}
                   </Typography.Text>
                 </div>
               </div>

@@ -138,7 +138,7 @@ export default function ReservationsPage() {
           </div>
 
           <Row gutter={[24, 24]}>
-            <Col xs={24} lg={10}>
+            <Col lg={8}>
               <Card className="rounded-2xl shadow" style={{ maxWidth: 560 }}>
                 <Typography.Title level={4}>Crear reserva</Typography.Title>
 
@@ -191,7 +191,7 @@ export default function ReservationsPage() {
               </Card>
             </Col>
 
-            <Col xs={24} lg={14}>
+            <Col lg={14}>
               <ReservationsCalendar
                 reservations={sortedReservations}
                 onCancel={handleCancelReservation}

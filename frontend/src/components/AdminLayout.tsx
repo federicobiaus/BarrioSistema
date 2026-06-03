@@ -4,7 +4,7 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useAuth } from '@/src/context/AuthContext';
 import { useState, useEffect } from 'react';
-import { Layout, Menu, Button, Typography, Space, Tooltip } from 'antd';
+import { Layout, Menu, Button, Typography, Space, Tooltip, Avatar } from 'antd';
 import {
   LogoutOutlined,
   MenuFoldOutlined,
@@ -49,13 +49,13 @@ const menuItems = [
     href: '/claims',
     roles: ['ADMIN', 'GUARD', 'USER', 'OWNER'],
     icon: <FileTextOutlined />,
-  },
+  },/*
   {
     label: 'Faltas',
     href: '/infractions',
     roles: ['ADMIN', 'USER'],
     icon: <ExclamationCircleOutlined />,
-  },
+  },*/
   {
     label: 'Usuarios',
     href: '/users',
@@ -113,7 +113,7 @@ export default function AdminLayout({
         collapsed={collapsed}
         onCollapse={(val) => setCollapsed(val)}
         collapsedWidth={80}
-        width={260}
+        width={250}
         style={{ background: '#001529' }}
       >
         <div style={{ padding: 24, color: '#fff', display: 'flex', alignItems: 'center', justifyContent: collapsed ? 'center' : 'flex-start' }}>
@@ -126,10 +126,10 @@ export default function AdminLayout({
           ) : (
             <div>
               <Typography.Title level={4} style={{ color: '#fff', margin: 0 }}>
-                Barrio
+                Sistema Barrio
               </Typography.Title>
               <Typography.Text style={{ color: 'rgba(255,255,255,0.75)' }}>
-                Sistema de Accesos
+                Gestión de Accesos
               </Typography.Text>
             </div>
           )}
@@ -145,18 +145,45 @@ export default function AdminLayout({
         />
 
         <div
-          style={{ padding: 24, borderTop: '1px solid rgba(255,255,255,0.12)', marginTop: 'auto', display: 'flex', justifyContent: 'center' }}
+          style={{ padding: 18, borderTop: '1px solid rgba(255,255,255,0.12)', marginTop: 'auto' }}
         >
           {collapsed ? (
             <Button type="text" icon={<LogoutOutlined />} onClick={logout} title="Cerrar sesión" />
           ) : (
-            <Space direction="vertical" size={4} style={{ width: '100%' }}>
-              <Typography.Text style={{ color: 'rgba(255,255,255,0.85)' }}>{user?.email}</Typography.Text>
-              <Typography.Text style={{ color: 'rgba(255,255,255,0.55)' }}>{user?.role}</Typography.Text>
-              <Button type="primary" danger block icon={<LogoutOutlined />} onClick={logout}>
-                Cerrar sesión
-              </Button>
-            </Space>
+            <div style={{ background: 'rgba(255,255,255,0.08)', borderRadius: 18, padding: 16, display: 'flex', flexDirection: 'column', gap: 14, width: '100%' }}>
+              <div style={{ display: 'flex', gap: 12, alignItems: 'center' }}>
+                <div style={{ width: 56, height: 56, borderRadius: 14, overflow: 'hidden', background: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                  {user?.avatar ? (
+                    <Avatar src={user.avatar} size={56} />
+                  ) : (
+                    <Avatar size={56} style={{ background: '#fff', color: '#001529' }} icon={<TeamOutlined />} />
+                  )}
+                </div>
+
+                <div style={{ minWidth: 0, flex: 1 }}>
+                  <Typography.Text strong style={{ color: '#fff', display: 'block', lineHeight: 1.2, marginBottom: 4 }}>
+                    {user?.name || user?.email}
+                  </Typography.Text>
+                  <Typography.Text style={{ color: 'rgba(255,255,255,0.75)', display: 'block', fontSize: 13, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                    {user?.email}
+                  </Typography.Text>
+                  <Typography.Text style={{ color: 'rgba(255,255,255,0.65)', fontSize: 12 }}>
+                    {user?.role}
+                  </Typography.Text>
+                </div>
+              </div>
+
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 10, width: '100%' }}>
+                <Link href="/profile" passHref>
+                  <Button type="default" style={{ borderRadius: 10, height: 42, width: '100%' }}>
+                    Ver perfil
+                  </Button>
+                </Link>
+                <Button type="primary" danger style={{ borderRadius: 10, height: 42, width: '100%' }} icon={<LogoutOutlined />} onClick={logout}>
+                  Cerrar sesión
+                </Button>
+              </div>
+            </div>
           )}
         </div>
       </Sider>

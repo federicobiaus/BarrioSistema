@@ -1,7 +1,7 @@
 ﻿'use client';
 
 import { useEffect, useMemo, useState } from 'react';
-import { Table, Button, Modal, Form, Input, Select, message, Space, Card, Typography } from 'antd';
+import { App, ConfigProvider, Table, Button, Modal, Form, Input, Select, message, Space, Card, Typography, theme } from 'antd';
 import { PlusOutlined, CommentOutlined } from '@ant-design/icons';
 
 import AdminLayout from '@/src/components/AdminLayout';
@@ -177,6 +177,8 @@ export default function ClaimsPage() {
   ];
 
   return (
+    <ConfigProvider theme={theme}>
+      <App>
     <AdminLayout>
       <RoleGuard allowedRoles={['ADMIN', 'GUARD', 'USER', 'OWNER']}>
         <Card style={{ marginBottom: 24 }}>
@@ -271,5 +273,7 @@ export default function ClaimsPage() {
         </Modal>
       </RoleGuard>
     </AdminLayout>
+    </App>
+    </ConfigProvider>
   );
 }

@@ -88,8 +88,8 @@ export default function DashboardPage() {
   if (loading) {
     return (
       <AdminLayout>
-        <div style={{ minHeight: '70vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-          <Spin tip="Cargando dashboard..." size="large" fullscreen />
+        <div style={{ minHeight: '60vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          <Spin tip="Cargando dashboard..." size="large" />
         </div>
       </AdminLayout>
     );

@@ -29,6 +29,7 @@ interface AuthContextType {
   ) => void;
   logout: () => void;
   isAuthenticated: boolean;
+  updateUser: (patch: Partial<User>) => void;
 }
 
 const AuthContext =
@@ -96,6 +97,18 @@ export function AuthProvider({
     setUser(user);
   };
 
+  const updateUser = (patch: Partial<User>) => {
+    setUser((prev) => {
+      const next = { ...(prev ?? {}), ...patch } as User;
+      try {
+        localStorage.setItem('user', JSON.stringify(next));
+      } catch (e) {
+        // ignore
+      }
+      return next;
+    });
+  };
+
   const logout = () => {
     localStorage.removeItem(
       'token',
@@ -120,6 +133,7 @@ export function AuthProvider({
         loading,
         login,
         logout,
+        updateUser,
         isAuthenticated:
           !!token,
       }}

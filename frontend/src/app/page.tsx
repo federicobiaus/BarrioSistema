@@ -18,7 +18,7 @@ export default function Home() {
       <Card style={{ width: '100%', maxWidth: 960, borderRadius: 20, boxShadow: '0 16px 40px rgba(0,0,0,0.08)' }}>
         <div style={{ textAlign: 'center' }}>
           <Title>Bienvenido a Barrio Sistema</Title>
-          <Paragraph type="secondary">Usa el menú para navegar entre dashboard, personas, accesos y reservas.</Paragraph>
+          <Paragraph type="secondary">Usa el menú para navegar.</Paragraph>
           <div style={{ display: 'flex', justifyContent: 'center', gap: 16, flexWrap: 'wrap', marginTop: 24 }}>
             <Link href="/login" passHref>
               <Button>Iniciar sesión</Button>

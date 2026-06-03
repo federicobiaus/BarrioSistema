@@ -10,19 +10,19 @@ const posts = [
     title: "Información importante",
     img: "/images/expensas.jpg",
     excerpt: "Documentación y novedades relevantes para propietarios.",
-    href: "https://asociacionsolaresdelvalle.ar/informacion-importante/",
+    href: "",
   },
   {
     title: "Situación Servicio de Agua",
     img: "/images/costos02.jpg",
     excerpt: "Últimas novedades sobre el servicio de agua en el barrio.",
-    href: "https://asociacionsolaresdelvalle.ar/situacion-servicio-agua/",
+    href: "",
   },
   {
     title: "Asamblea 2025",
     img: "/images/corte.jpg",
     excerpt: "Asamblea Solares del Valle - Convocatoria y materiales. \n ",
-    href: "https://asociacionsolaresdelvalle.ar/asamblea-solares/",
+    href: "",
   },
 ];
 

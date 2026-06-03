@@ -1,6 +1,6 @@
 import './globals.css';
 import 'antd/dist/reset.css';
-import { ConfigProvider, theme } from 'antd';
+import { ConfigProvider } from 'antd';
 import { AuthProvider } from '@/src/context/AuthContext';
 import ProtectedRoute from '@/src/components/ProtectedRoute';
 
@@ -12,7 +12,15 @@ export default function RootLayout({
   return (
     <html lang="es">
       <body>
-        <ConfigProvider theme={{theme}}>
+        <ConfigProvider
+          theme={{
+            token: {
+              colorPrimary: '#1890ff',
+              borderRadius: 14,
+              fontFamily: 'Arial, Helvetica, sans-serif',
+            },
+          }}
+        >
           <AuthProvider>
             <ProtectedRoute>{children}</ProtectedRoute>
           </AuthProvider>

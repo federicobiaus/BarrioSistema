@@ -1,0 +1,36 @@
+
+services:
+  backend:
+    image: ghcr.io/federicobiaus/barriosistema-backend:latest
+    container_name: barriosistema-backend
+    restart: unless-stopped
+    env_file:
+      - .env
+    environment:
+      NODE_ENV: production
+      PORT: "3001"
+    expose:
+      - "3001"
+    mem_limit: 256m
+    networks:
+      - barrio
+
+  frontend:
+    image: ghcr.io/federicobiaus/barriosistema-frontend:latest
+    container_name: barriosistema-frontend
+    restart: unless-stopped
+    environment:
+      NODE_ENV: production
+      PORT: "3000"
+      HOSTNAME: "0.0.0.0"
+    ports:
+      - "3000:3000"
+    depends_on:
+      - backend
+    mem_limit: 384m
+    networks:
+      - barrio
+
+networks:
+  barrio:
+    driver: bridge

@@ -60,11 +60,28 @@ jobs:
             ghcr.io/federicobiaus/barriosistema-frontend:latest
             ghcr.io/federicobiaus/barriosistema-frontend:${{ github.sha }}
 
+
   deploy:
     needs: build
     runs-on: ubuntu-latest
 
     steps:
+      - name: Connect to Tailscale
+        uses: tailscale/github-action@v4
+        with:
+          oauth-client-id: ${{ secrets.TS_OAUTH_CLIENT_ID }}
+          oauth-secret: ${{ secrets.TS_OAUTH_SECRET }}
+          tags: tag:ci
+
+      - name: Check Raspberry Pi connectivity
+        env:
+          PI_HOST: ${{ secrets.PI_HOST }}
+          PI_SSH_PORT: ${{ secrets.PI_SSH_PORT }}
+        run: |
+          echo "Checking SSH connectivity to Raspberry Pi..."
+          timeout 10 bash -c 'cat < /dev/null > /dev/tcp/${PI_HOST}/${PI_SSH_PORT}'
+          echo "SSH port is reachable."
+
       - name: Deploy to Raspberry Pi
         uses: appleboy/ssh-action@v1
         with:
@@ -72,8 +89,11 @@ jobs:
           username: ${{ secrets.PI_USER }}
           key: ${{ secrets.PI_SSH_KEY }}
           port: ${{ secrets.PI_SSH_PORT }}
+          timeout: 30s
+          command_timeout: 10m
           script: |
             cd ~/apps/BarrioSistema
             docker compose pull
             docker compose up -d --remove-orphans
             docker image prune -f
+
